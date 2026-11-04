@@ -63,6 +63,10 @@ p_t(x, z) = exp(eta_t) / sum over s of exp(eta_s)  **(D1)**
 
 Only the index t matters. Ignore the cell labels (Aa, Ba, ...) in the paper's Table 2, which contain numbering typos.
 
+**Note (D10).** eta_6 and eta_7 differ only in z3 versus z3^2. z3 is binary, so z3^2 = z3, which makes eta_6 = eta_7 and p_6 = p_7 for every unit. We keep the paper's specification as written. The two groups still have different outcome coefficients, so tau(6, 7) is well defined. Expect the fitted p_hat_6 to be close to p_hat_7.
+
+**Note (D11).** Groups t1-t5 and t9 have thin lower tails in p_t. In a 1e5-unit check, 3.4% of units have some p_t below 0.01, and the 1st percentile of p_1 is about 0.0016. This means overlap is poor for those levels. No trimming is applied. Matching diagnostics (mean matching distance per target group, and the share of units with p_hat below 0.01) are recorded for every replication.
+
 ## Potential outcomes
 
 epsilon ~ N(0, 1), drawn independently for each unit. Observed outcome Y = Y(T).
@@ -102,14 +106,22 @@ The paper prints no epsilon in Y(1) for Simulation 2. Treat that as a typo and a
 
 The paper fixes the group sizes but also assigns treatment by a multinomial model. Default: draw a large pool of units, assign T from p_t, then keep the first n_g units in each group (pool size large enough that every group fills; check this in code).
 
-## True effects  (D4)
+## True effects  (D4, D9)
 
-Target = population ATE over the pooled population, tau(t, t') = (beta_t - beta_t')' mu, where mu = E[(X, Z)] (use the centred version in Simulation 2). With Z1 mean 0:
+Write W for the outcome regressors: W = (x1, x2, x3, x4, z1, z2, z3) in Simulation 1 and W = (x1, x2, x3, x4, z1, z2 - 1, z3 - 0.5) in Simulation 2. Because outcomes are linear in W, every target has the form tau(t, t') = (beta_t - beta_t')' m for some covariate mean m. Two targets are computed and every result is reported against both.
 
-- **Simulation 1:** mu = (0, 0, 0, 0, 0, 1, 0.5), so tau(1, 2) = -1.5, and so on.
-- **Simulation 2:** all 36 true effects are 0, because z2 and z3 are centred in the outcome equations.
+**Primary: population ATE, tau_pop.** m = mu = E[W] over the superpopulation. With Z1 mean 0:
 
-Verify these closed forms against a Monte Carlo average on a very large population (about 1e6 units) before trusting them.
+- **Simulation 1:** mu = (0, 0, 0, 0, 0, 1, 0.5), so tau_pop(1, 2) = -1.5, and so on.
+- **Simulation 2:** mu = 0, so all 36 tau_pop are 0.
+
+Verify these closed forms against a Monte Carlo average of Y(t) - Y(t') on a large population (about 1e6 units).
+
+**Secondary: balanced-design ATE, tau_bal.** m = mu_bal, the covariate mean of the sampling design in D3 (equal group sizes):
+
+mu_bal = (1/A) * sum over t of E[W | T = t],  with  E[W | T = t] = E[W p_t(X, Z)] / E[p_t(X, Z)].
+
+Compute mu_bal by Monte Carlo on a large pool (about 1e6 units or more), weighting by p_t rather than by the sampled T, which lowers the variance. Check it against a direct average of Y_i(t) - Y_i(t') over many simulated balanced samples. tau_bal is generally not 0 in Simulation 2. See D9 for why this target exists.
 
 ## Estimators
 
@@ -119,29 +131,57 @@ For each replication and each pair (t, t'):
 
 **CM.** For every unit i in the sample and every level s, impute Y_i(s) = Y_i if T_i = s. Otherwise use the Y of the nearest unit j with T_j = s, where distance is Mahalanobis on all 7 covariates (X and Z together, V = pooled sample covariance)  **(D6)**. Use 1 match, with replacement, and break ties at random. Then tau_hat_CM(t, t') = mean over all i of [Y_i(t) - Y_i(t')].
 
-**GPS.** Fit a multinomial logit of T on x1..x4, z1, z2, z3 (linear terms only, e.g. `nnet::multinom`)  **(D5)**. This is deliberately misspecified, because the true eta contains squares. For every unit i and level s, impute Y_i(s) = Y_i if T_i = s. Otherwise use the Y of the unit j with T_j = s that minimizes |p_hat_s(x_j, z_j) - p_hat_s(x_i, z_i)|. Then tau_hat_GPS(t, t') = mean over all i of [Y_i(t) - Y_i(t')]. Use p_hat_t' for the t' term. The paper's Eq. (4) prints p_t in both terms, which looks like a typo  **(D7)**.
+**GPS.** Fit a multinomial logit of T on x1..x4, z1, z2, z3 (linear terms only, e.g. `nnet::multinom`)  **(D5)**. This is deliberately misspecified, because the true eta contains squares. For every unit i and level s, impute Y_i(s) = Y_i if T_i = s. Otherwise use the Y of the unit j with T_j = s that minimizes |p_hat_s(x_j, z_j) - p_hat_s(x_i, z_i)|. Then tau_hat_GPS(t, t') = mean over all i of [Y_i(t) - Y_i(t')]. Use p_hat_t' for the t' term. The paper's Eq. (4) prints p_t in both terms, which looks like a typo  **(D7)**. In the implementation, column s of the n x A imputed-outcome matrix is always matched on p_hat_s, so the t' term automatically uses p_hat_t'.
 
 ## Inference and coverage  (D8)
 
-The paper does not say how its confidence intervals were built. Default: nonparametric bootstrap, percentile 95% CI, B = 200 for the final run (B = 20 for tests). Note that bootstrapping matching estimators is not formally valid (Abadie and Imbens, 2008), so coverage may differ from the paper. Sensitivity option: Abadie-Imbens standard errors for CM.
+The paper does not say how its confidence intervals were built. Default: nonparametric bootstrap, percentile 95% CI, B = 200 for the final run (B = 20 for tests).
+
+- **Stratified resampling.** In each bootstrap draw, resample n_g units with replacement within each treatment group, so the group sizes stay fixed as in the design (D3).
+- **Full re-estimation.** Recompute every estimator from scratch on each bootstrap sample. That means refitting the GPS multinomial logit, and recomputing the pooled covariance V for CM.
+- **One CI, two targets.** Each replication gives one CI per estimator and pair. Coverage is the share of replications whose CI contains tau_pop, and separately the share whose CI contains tau_bal.
+- **Timing.** Time the 20-replication test first. If B = 200 is too slow, lower B and record the value used.
+
+Bootstrapping matching estimators is not formally valid (Abadie and Imbens, 2008), so coverage may differ from the paper. Abadie-Imbens standard errors are out of scope for now, and the `Matching` package is not used.
 
 ## Outputs
 
-Per estimator and pair, over the replications:
+Per estimator, pair, and target (tau_pop and tau_bal), over the replications:
 
 - signed bias = mean(tau_hat) - tau
 - absolute bias = |mean(tau_hat) - tau| (Table 1 reports this)
-- MSE
+- MSE = mean((tau_hat - tau)^2)
 - coverage of the 95% CI (%)
 
-Write tidy summaries to `results/sim1_summary.csv` and `results/sim2_summary.csv`. Write per-replication estimates to `results/*.rds` (git-ignored). Reproduce the bias plot of the 36 effects (paper Fig. 1) for Simulation 2.
+The summary tables use long format, with a `target` column taking the values `pop` or `bal`. Write the true effects to `results/true_effects_sim1.csv` and `results/true_effects_sim2.csv`. Write tidy summaries to `results/sim1_summary.csv` and `results/sim2_summary.csv`. Write per-replication estimates to `results/*.rds` (git-ignored). Reproduce the bias plot of the 36 effects (paper Fig. 1) for Simulation 2.
+
+## Comparison with the paper: sign of the bias
+
+In this project, bias = mean(tau_hat) - tau, with tau(t, t') = E[Y(t) - Y(t')]. The paper's Simulation 2 bias values (`results/paper_table3.csv`, transcribed as published) correlate negatively with ours. `R/plots.R` therefore draws the overlay twice, keeping both versions:
+
+- `results/fig1_bias_sim2_pop_vs_paper.png`: the paper's bias as published.
+- `results/fig1_bias_sim2_pop_vs_paper_flipped.png`: the paper's bias multiplied by -1.
+
+Observed correlations across the 36 pairs, with our bias against tau_pop (500 replications, B = 200). They are saved in `results/sim2_bias_correlations.csv`, together with the tau_bal versions.
+
+| Estimator | r, paper sign as published | r, paper sign flipped | Same sign (published / flipped) |
+|---|---|---|---|
+| DIF | -0.954 | 0.954 | 5 / 31 of 36 |
+| CM | -0.764 | 0.764 | 7 / 29 of 36 |
+| GPS | -0.874 | 0.874 | 7 / 29 of 36 |
+
+The flipped version correlates at 0.95 (DIF), 0.76 (CM) and 0.87 (GPS) with our bias. Flipping the sign only negates r, so the two columns differ only in sign. Against tau_bal, the flipped correlations are 0.94, 0.59 and 0.47.
+
+This is an observation about the published numbers. It does not establish which convention the paper used, for example whether it reports tau - E(tau_hat) or defines the effect as Y(t') - Y(t). The paper's Simulation 1 Table 1 reports absolute bias, so it cannot show the sign. Comparisons of absolute bias, MSE and coverage do not depend on the sign.
 
 ## Implementation notes
 
 - Folder plan: `R/dgp.R`, `R/estimators.R`, `R/run_sim1.R`, `R/run_sim2.R`, `R/summarize.R`.
-- Per-replication seeds, parallelized with `future.apply` or `parallel`. Test with 20 replications before 500. Record package versions with `renv`.
-- Sanity checks: p_t sums to 1; every group reaches its target size; closed-form tau matches Monte Carlo; GPS overlap looks sensible.
-- Commit after each stage.
+- Stage 1 is `R/dgp.R` plus `R/check_truth.R`, which runs the sanity checks on the data-generating process and both true-effect targets.
+- Per-replication seeds (pre-generated L'Ecuyer-CMRG streams), parallelized with `parallel`. Test with 20 replications before 500.
+- Package versions: the scripts use only base R, `parallel` and `nnet`, plus `MASS` for data generation. The R version and session details of the full run are in `results/run_session_info.txt`, and the `nnet` and `MASS` versions are logged in `results/run_log.txt`. No `renv` lockfile exists. Adding one with `renv` is an option for later.
+- Sanity checks: p_t sums to 1; every group reaches its target size; closed-form tau_pop matches Monte Carlo; the Monte Carlo tau_bal matches a direct average over balanced samples; GPS overlap looks sensible.
+- Stop after each stage for review. The user commits from GitHub Desktop, so Claude never runs `git commit` or `git push`, and `.Rhistory` is never staged.
 
 ## Out of scope
 
@@ -154,10 +194,14 @@ Paper Section 6 (the learning-mode application). Its data-generating process is 
 | D1 | Paper's denominator is 1 + sum(exp(eta)), which makes probabilities sum below 1 | Standard multinomial logit, no extra 1 |
 | D2 | "Z1 ~ N[-3, 3]" is ambiguous | Uniform(-3, 3). Its mean of 0 is consistent with the centred z2, z3 terms, which make all true effects 0 in Simulation 2 |
 | D3 | Fixed group size versus random assignment | Large pool, assign by p_t, keep n_g per group |
-| D4 | True tau not stated | Pooled-population ATE, closed form checked by Monte Carlo |
+| D4 | True tau not stated | Two targets, both reported: population ATE tau_pop (primary; closed form checked by Monte Carlo) and balanced-design ATE tau_bal (secondary; Monte Carlo) |
 | D5 | GPS model not stated | Linear multinomial logit (misspecified on purpose) |
 | D6 | Paper defines V from X only but matches on X and Z | Mahalanobis on (X, Z) jointly |
 | D7 | Eq. (4) uses p_t in both terms | Use p_t' for the t' term |
-| D8 | CI method not stated | Percentile bootstrap, B = 200 |
+| D8 | CI method not stated | Percentile bootstrap, B = 200, stratified by treatment group, full re-estimation (GPS refit, V recomputed) in each draw |
+| D9 | The D3 design does not sample from the population: keeping n_g units per group gives an equal-weight mixture of f(w \| T = t), not f(w). CM and GPS average over the sample's units, so they estimate the ATE for that mixture rather than tau_pop | Report bias, MSE and coverage against both tau_pop and tau_bal |
+| D10 | eta_6 = eta_7 in Simulation 2 (z3 is binary, so z3^2 = z3), so p_6 = p_7 | Keep the paper's specification; expect p_hat_6 close to p_hat_7 |
+| D11 | Thin p_t tails in t1-t5 and t9 (poor overlap) | No trimming; record matching diagnostics per replication |
+| D12 | How to record the software environment | Scripts use only base R, `parallel` and `nnet` (plus `MASS` for data generation). `R/run_all.R` writes `results/run_session_info.txt`. In the completed full run, that file lists only R and the base packages, and the `nnet` and `MASS` versions (7.3.20, 7.3.65) are in `results/run_log.txt`; later runs also list `nnet` and `MASS` in the file. No `renv` lockfile; adding one is an option for later |
 
 Exact agreement with the published tables should not be expected, because of these open points. The qualitative pattern should hold: DIF is clearly biased, while CM and GPS reduce the bias substantially.
