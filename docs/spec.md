@@ -195,7 +195,7 @@ Paper Section 6 (the learning-mode application). Its data-generating process is 
 | D2 | "Z1 ~ N[-3, 3]" is ambiguous | Uniform(-3, 3). Its mean of 0 is consistent with the centred z2, z3 terms, which make all true effects 0 in Simulation 2 |
 | D3 | Fixed group size versus random assignment | Large pool, assign by p_t, keep n_g per group |
 | D4 | True tau not stated | Two targets, both reported: population ATE tau_pop (primary; closed form checked by Monte Carlo) and balanced-design ATE tau_bal (secondary; Monte Carlo) |
-| D5 | GPS model not stated | Linear multinomial logit (misspecified on purpose) |
+| D5 | GPS model not stated | Linear multinomial logit (misspecified on purpose), fitted with `nnet::multinom` at reltol = 1e-14 and maxit = 10000. The defaults (reltol = 1e-8, maxit = 100) left the fitted probabilities too uncertain for the very small matching distances |
 | D6 | Paper defines V from X only but matches on X and Z | Mahalanobis on (X, Z) jointly |
 | D7 | Eq. (4) uses p_t in both terms | Use p_t' for the t' term |
 | D8 | CI method not stated | Percentile bootstrap, B = 200, stratified by treatment group, full re-estimation (GPS refit, V recomputed) in each draw |

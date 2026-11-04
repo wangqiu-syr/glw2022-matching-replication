@@ -29,7 +29,7 @@ From the repository root (R 4.5; packages MASS and nnet):
 |---|---|---|
 | 0. True effects (needed by the summaries) | `Rscript R/check_truth.R` | about 1 min |
 | (optional) Tests | `Rscript R/test_estimators.R` (`quick` for unit tests only) | about 6 min |
-| 1. Simulations 1 and 2, then summaries | `Rscript R/run_all.R` (options: `R=500 B=200 workers=10`) | Simulation 1 about 6 min; full run about 5 h on 10 workers |
+| 1. Simulations 1 and 2, then summaries | `Rscript R/run_all.R` (options: `R=500 B=200 workers=10`) | On 10 workers: Simulation 1 about 15 min, Simulation 2 about 4 h 48 min, full run about 5 h (log: 14m28s, 4h48m19s, 5h03m08s) |
 | 2. Rebuild summaries only | `Rscript R/summarize.R` | seconds |
 | 3. Figures and Simulation 2 comparison | `Rscript R/plots.R` | seconds |
 
