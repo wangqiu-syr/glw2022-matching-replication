@@ -5,3 +5,6 @@
 *.pdf
 *.docx
 results/**/*.rds
+results/run_pid.txt
+results/run_log_stderr.txt
+
