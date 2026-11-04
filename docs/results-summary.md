@@ -12,7 +12,7 @@ We re-ran both simulations from Guo, Liu & Wang (2022, *Annals of Data Science* 
 - **Simulation 2:** 9 treatment combinations, 200 units each, 36 pairwise effects.
 - **Estimators:** the raw difference in group means (DIF); covariate matching (CM: one Mahalanobis nearest neighbour, with replacement); generalized propensity score matching (GPS: linear multinomial logit, nearest neighbour on the fitted score). The GPS model is fitted with a tight tolerance (reltol = 1e-14), because the default left the fitted probabilities too uncertain for the very small matching distances.
 - **Intervals:** percentile bootstrap, B = 200, resampling within treatment groups.
-- **Run:** about 5 hours on 10 workers. Code, results and the full specification (docs/spec.md) are in the private repository wangqiu-syr/ClaudeCodeTry.
+- **Run:** about 5 hours on 10 workers. Code, results and the full specification (docs/spec.md) are in the private repository wangqiu-syr/glw2022-matching-replication.
 
 ## Results
 
@@ -64,7 +64,7 @@ Thirteen points where the paper is silent, ambiguous or inconsistent, and what w
 | D8 | The confidence interval method is not stated | Percentile bootstrap, B = 200, resampling within treatment groups, refitting the GPS model and covariance matrix each time |
 | D9 | The D3 design does not sample from the population: it gives an equal-weight mixture of the group-specific covariate distributions. CM and GPS average over the sample's units, so they estimate the ATE for that mixture, not τ\_pop | Report bias, MSE and coverage against both τ\_pop and τ\_bal |
 | D10 | η₆ and η₇ differ only by z3 versus z3², and z3 is binary | Kept as printed; p₆ = p₇ for every unit, so the two groups cannot be told apart by covariates |
-| D11 | Thin tails in groups 1–5 and 9: poor overlap, some fitted probabilities near 0 | No trimming, as in the paper |
+| D11 | Thin tails in groups 1–5 and 9: poor overlap, some fitted probabilities near 0 | No trimming; the paper's simulation section describes none |
 | D12 | Recording the software environment | Base R, parallel, nnet and MASS; no renv lockfile. R and base-package versions are in results/run\_session\_info.txt; for the full run, nnet 7.3.20 and MASS 7.3.65 appear only in results/run\_log.txt (later runs list them in the session file too) |
 | D13 | Our GPS bias is smaller than the paper's | Sensitivity runs GPS\_lit and GPS\_lit2 (Simulation 1 only) that read Eq. (4) literally; the main GPS is unchanged |
 
@@ -75,6 +75,6 @@ These results support the pattern, not the paper's exact numbers, and several cl
 - **Which reading of Eq. (4) the paper used.** The experiments show the literal reading explains part of the GPS gap, not that the authors used it.
 - **Why some numbers differ.** Our Simulation 1 DIF differences do not depend on any estimator choice, so the data design probably differs somewhere (D1–D3). Simulation 2's DIF pattern matches closely, which argues against a large mismatch.
 - **Which sign convention the paper used.** Its Table 1 reports only absolute bias.
-- **Anything beyond this data-generating process.** The two treatment levels are combined into one multi-group treatment, so the results say little about other multilevel designs.
+- **Anything beyond this data-generating process.** As in the paper (its Sections 2 and 4), the two treatment levels are combined into one multi-group treatment, so the results say little about other multilevel designs.
 - **The learning-mode application.** The paper does not describe how its Section 6 data were generated, so Table 5 was not replicated; its Fig. 2 was redrawn from the published table.
 - **A pattern match in Simulation 1.** Six pairs are too few: the pattern correlation with the paper is 0.62 for the main GPS and 0.40 for GPS\_lit2.

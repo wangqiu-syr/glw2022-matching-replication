@@ -1,4 +1,4 @@
-# ClaudeCodeTry
+# glw2022-matching-replication
 
 R simulation of two matching estimators plus a naive difference-in-means baseline for multilevel treatments in observational data:
 
