@@ -6,10 +6,10 @@ Qiu Wang, Syracuse University · v1.0 · November 2026
 
 Guo, Liu and Wang (2022) proposed covariate matching (CM) and generalized propensity score (GPS) matching to estimate pairwise effects across multilevel treatment combinations, and reported simulations showing that both reduce the bias of the raw group difference.
 
-- **Published vs rebuilt.** Their two simulations (4 and 9 treatment combinations) report that matching removes most of the raw-difference bias. A rebuild written from the paper's text alone, without the original code, confirms this: mean absolute bias falls from 0.6–0.9 (raw difference) to 0.2–0.3 (CM) and 0.03–0.10 (GPS).
-- **Where the numbers differ.** The exact values do not match. Our GPS bias is much smaller than the paper's Table 1 (0.026 against 0.29 in Simulation 1), and in Simulation 2 our bias pattern tracks the published one with the opposite sign (correlation about −0.95 for the raw difference).
-- **Gap partly explained.** The paper leaves thirteen points open (D1–D13). Reading Eq. (4) literally, as printed, closes about half of the GPS gap (mean absolute bias 0.026 to 0.159, against 0.293 published); the rest is unexplained, and we cannot say which unreported choice accounts for it.
-- **The method stands.** The paper's estimators are implemented as described and are unchanged. Both remove most of the raw-difference bias; CM is more efficient (about half GPS's MSE) and GPS is less biased, a bias–variance trade-off.
+- **Published vs rebuilt.** The rebuild, written from the paper's text alone without the original code, confirms the paper's central claim: both matching methods remove most of the raw-difference bias. Mean absolute bias falls from 0.6–0.9 (raw difference) to 0.2–0.3 (CM) and 0.03–0.10 (GPS).
+- **GPS does better than published.** In the rebuild, GPS matching has the smallest bias of the three estimators in both simulations, and in Simulation 1 it is nearly unbiased (mean absolute bias 0.026, against 0.29 in the paper's Table 1).
+- **Part of the gap explained.** Reading the paper's Eq. (4) literally, as printed, raises the GPS bias to 0.159, about half the way to the published value. This suggests the published GPS figures understate what the method does when Eq. (4) is applied as intended; the rest of the gap depends on details the paper leaves open (D1–D13).
+- **The method stands.** The paper's estimators are implemented unchanged. CM is more efficient, with about half GPS's mean squared error, and GPS is less biased: a bias–variance trade-off. Not every number improves: CM coverage in Simulation 1 is lower than published (83–95% against 92–98%).
 
 ## Why this replication
 
@@ -85,43 +85,53 @@ Each replication uses its own pre-generated L'Ecuyer-CMRG random-number stream, 
 
 ## Files
 
-```
-README.md, LICENSE, CITATION.cff
-docs/spec.md                  simulation specification and decisions D1-D13
-docs/replication_verdict.md   results and decisions D1-D13
-docs/two_way.md               our results against the paper's published tables
-docs/sensitivity.md           D13 sensitivity check (literal Eq. (4))
-R/                            scripts (data generation, estimators, runners, summaries)
-results/                      output tables, figures and summary.md (large .rds files are git-ignored)
-```
+### Start here
 
-| Path | Contents |
-|---|---|
-| [docs/spec.md](docs/spec.md) | simulation specification, with the decisions D1–D13 |
-| [docs/replication_verdict.md](docs/replication_verdict.md) | results and decisions D1–D13: what replicates, what does not, and what the rebuild cannot show |
-| [docs/two_way.md](docs/two_way.md) | two-way comparison: our results and the paper's published Tables 1 and 3, pair by pair, with the overlay figures |
-| [docs/sensitivity.md](docs/sensitivity.md) | D13 sensitivity check: GPS_lit and GPS_lit2 (Eq. (4) read literally), Simulation 1 only |
-| [results/summary.md](results/summary.md) | compact per-pair tables reformatted from the summary CSVs: both simulations against τ\_pop and τ\_bal, and against the paper's Tables 1 and 3 |
-| [results/true_effects_sim1.csv](results/true_effects_sim1.csv), [results/true_effects_sim2.csv](results/true_effects_sim2.csv) | tau_pop and tau_bal for every pair, with Monte Carlo SEs |
-| [results/sim1_summary.csv](results/sim1_summary.csv), [results/sim2_summary.csv](results/sim2_summary.csv) | bias, absolute bias, SD, MSE, coverage and CI width for each estimator, pair and target (`pop` or `bal`) |
-| [results/sim1_diagnostics.csv](results/sim1_diagnostics.csv), [results/sim2_diagnostics.csv](results/sim2_diagnostics.csv) | per replication: run time, GPS convergence, matching distances, share of p_hat < 0.01 |
-| [results/sim1_vs_paper.csv](results/sim1_vs_paper.csv), [results/sim2_vs_paper.csv](results/sim2_vs_paper.csv) | our numbers next to the paper's Table 1 and Table 3 |
-| [results/fig1_bias_sim2_pop.png](results/fig1_bias_sim2_pop.png), [results/fig1_bias_sim2_bal.png](results/fig1_bias_sim2_bal.png) | Fig. 1 replica: signed bias of the 36 Simulation 2 effects |
-| [results/fig1_bias_sim2_pop_vs_paper.png](results/fig1_bias_sim2_pop_vs_paper.png), [results/fig1_bias_sim2_pop_vs_paper_flipped.png](results/fig1_bias_sim2_pop_vs_paper_flipped.png) | the same, with the paper's values as dashed lines: as published, and multiplied by -1 (see "Comparison with the paper" in [docs/spec.md](docs/spec.md)) |
-| [results/sim2_bias_correlations.csv](results/sim2_bias_correlations.csv) | correlation of our bias with the paper's across the 36 pairs, paper sign as published and flipped |
-| [results/fig2_table5_redrawn.png](results/fig2_table5_redrawn.png) | the paper's Fig. 2 redrawn from its Table 5 (not replicated) |
-| [results/paper_table1.csv](results/paper_table1.csv), [results/paper_table3.csv](results/paper_table3.csv), [results/paper_table5.csv](results/paper_table5.csv) | values transcribed from the paper's published tables, for comparison only |
-| [results/run_log.txt](results/run_log.txt), [results/run_session_info.txt](results/run_session_info.txt) | log and `sessionInfo()` of the full run |
-| results/reps/ (local only, not in the repo) | per-replication checkpoints |
-| results/reps_gps_literal/, results/reps_gps_literal2/ (local only, not in the repo) | per-replication checkpoints of the D13 GPS_lit and GPS_lit2 runs |
-| [results/gps_literal_sim1.csv](results/gps_literal_sim1.csv) | D13 sensitivity, Simulation 1: GPS vs GPS_lit (Eq. (4) read literally for units outside groups t and t') per pair, with the paper's Table 1 GPS values |
-| [results/gps_literal2_sim1.csv](results/gps_literal2_sim1.csv) | D13 sensitivity, Simulation 1: GPS vs GPS_lit vs GPS_lit2 (fully literal Eq. (4), also for units in group t) per pair, with the paper's Table 1 GPS values |
-| [R/gps_literal.R](R/gps_literal.R) | the GPS_lit estimator, reproducing the main run's random-number sequence |
-| [R/gps_literal2.R](R/gps_literal2.R) | the GPS_lit2 estimator (requires [R/gps_literal.R](R/gps_literal.R)) |
-| [R/run_gps_literal.R](R/run_gps_literal.R) | self-tests (`check`) and the paired GPS_lit run on the main Simulation 1 datasets; writes [gps_literal_sim1.csv](results/gps_literal_sim1.csv) |
-| [R/run_gps_literal2.R](R/run_gps_literal2.R) | self-tests (`check`) and the paired GPS_lit2 run; writes [gps_literal2_sim1.csv](results/gps_literal2_sim1.csv) |
+[README.md](README.md) gives the overview. [docs/replication_verdict.md](docs/replication_verdict.md) says what replicates and what does not, and [docs/two_way.md](docs/two_way.md) sets our numbers beside the paper's Tables 1 and 3, pair by pair.
 
-The paper's PDF is not included. The `paper_table*.csv` files hold values transcribed from its published tables, for comparison only.
+### Design and decisions
+
+[docs/spec.md](docs/spec.md) is the full simulation specification, with the thirteen decisions D1–D13. [docs/sensitivity.md](docs/sensitivity.md) reports the D13 check, which reads Eq. (4) literally (Simulation 1 only).
+
+### Code
+
+R scripts in the R/ folder, run from the repository root; the order is under Reproduce above.
+
+<details>
+<summary>R scripts by role (13 files)</summary>
+
+- **Data generation:** [R/dgp.R](R/dgp.R) (covariates, treatment probabilities, outcomes, true effects); [R/check_truth.R](R/check_truth.R) (computes and saves the true effects).
+- **Estimators:** [R/estimators.R](R/estimators.R) (DIF, CM, GPS and the bootstrap); [R/gps_literal.R](R/gps_literal.R) and [R/gps_literal2.R](R/gps_literal2.R) (the D13 variants GPS_lit and GPS_lit2).
+- **Runners:** [R/replicate.R](R/replicate.R) (one replication, with its own random-number stream); [R/run_sim.R](R/run_sim.R) (parallel runs with checkpoints); [R/run_all.R](R/run_all.R) (both simulations, then the summaries); [R/run_gps_literal.R](R/run_gps_literal.R) and [R/run_gps_literal2.R](R/run_gps_literal2.R) (paired D13 runs and their self-tests).
+- **Summaries and plots:** [R/summarize.R](R/summarize.R) (summary and comparison CSVs); [R/plots.R](R/plots.R) (figures and the Simulation 2 comparison).
+- **Tests:** [R/test_estimators.R](R/test_estimators.R) (unit and integration tests).
+
+</details>
+
+### Results
+
+[results/summary.md](results/summary.md) has compact per-pair tables. The figures, the CSVs for each simulation and the sensitivity CSVs are listed below.
+
+<details>
+<summary>Figures, CSVs and run records (18 files)</summary>
+
+- **Figures:** [results/fig1_bias_sim2_pop.png](results/fig1_bias_sim2_pop.png) and [results/fig1_bias_sim2_bal.png](results/fig1_bias_sim2_bal.png) (signed bias of the 36 Simulation 2 effects, against τ\_pop and τ\_bal); [results/fig1_bias_sim2_pop_vs_paper.png](results/fig1_bias_sim2_pop_vs_paper.png) and [results/fig1_bias_sim2_pop_vs_paper_flipped.png](results/fig1_bias_sim2_pop_vs_paper_flipped.png) (the same with the paper's values overlaid, as published and multiplied by −1); [results/fig2_table5_redrawn.png](results/fig2_table5_redrawn.png) (the paper's Table 5 redrawn, not replicated).
+- **Simulation 1 CSVs:** [results/true_effects_sim1.csv](results/true_effects_sim1.csv) (τ\_pop and τ\_bal per pair); [results/sim1_summary.csv](results/sim1_summary.csv) (bias, SD, MSE, coverage and CI width per estimator, pair and target); [results/sim1_diagnostics.csv](results/sim1_diagnostics.csv) (per replication: run time, GPS convergence, matching distances); [results/sim1_vs_paper.csv](results/sim1_vs_paper.csv) (against the paper's Table 1).
+- **Simulation 2 CSVs:** [results/true_effects_sim2.csv](results/true_effects_sim2.csv); [results/sim2_summary.csv](results/sim2_summary.csv); [results/sim2_diagnostics.csv](results/sim2_diagnostics.csv); [results/sim2_vs_paper.csv](results/sim2_vs_paper.csv) (against the paper's Table 3); [results/sim2_bias_correlations.csv](results/sim2_bias_correlations.csv) (correlation with the paper's bias, as published and flipped).
+- **Sensitivity CSVs (D13):** [results/gps_literal_sim1.csv](results/gps_literal_sim1.csv) (GPS against GPS_lit); [results/gps_literal2_sim1.csv](results/gps_literal2_sim1.csv) (GPS, GPS_lit and GPS_lit2).
+- **Run records:** [results/run_log.txt](results/run_log.txt) and [results/run_session_info.txt](results/run_session_info.txt) (log and `sessionInfo()` of the full run).
+
+</details>
+
+Per-replication checkpoints (results/reps/, results/reps_gps_literal/, results/reps_gps_literal2/) are local only, not in the repo.
+
+### Published values
+
+[results/paper_table1.csv](results/paper_table1.csv), [results/paper_table3.csv](results/paper_table3.csv) and [results/paper_table5.csv](results/paper_table5.csv) hold values transcribed from the paper's published tables, for comparison only. The paper's PDF is not included.
+
+### Project files
+
+[LICENSE](LICENSE) (MIT), [CITATION.cff](CITATION.cff) (citation metadata) and [.gitignore](.gitignore) (keeps checkpoints, PDFs and local files out of the repo).
 
 ## Lesson
 
