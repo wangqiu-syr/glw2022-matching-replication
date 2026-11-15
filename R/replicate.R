@@ -1,5 +1,5 @@
 # replicate.R -- one simulation replication and reproducible per-replication
-# seeds. Used by the timing test now and by run_sim1.R / run_sim2.R later.
+# seeds. Used by R/run_all.R (via R/run_sim.R), R/test_estimators.R and the D13 runners.
 # Requires R/dgp.R and R/estimators.R to be sourced.
 
 # One L'Ecuyer-CMRG stream per replication, derived from a master seed.

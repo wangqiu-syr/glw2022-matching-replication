@@ -16,13 +16,50 @@
 #   fig1_bias_sim2_pop_vs_paper.png                     ours + paper overlay  (needs table 3)
 #   fig2_table5_redrawn.png                             Fig. 2 redrawn        (needs table 5)
 #   sim2_vs_paper.csv                                   per pair x estimator  (needs table 3)
+#   fig_sim1_abs_bias_vs_paper.png                      Simulation 1 vs Table 1 (needs sim1_vs_paper.csv)
 # Parts whose paper table is missing are skipped with a message.
-# Optional argument: a different folder for inputs and outputs (default results).
+# Optional arguments: a different folder for inputs and outputs (default results), then
+# "sim1" to draw only the Simulation 1 comparison figure:
+#   Rscript R/plots.R results sim1
 
-RES <- { a <- commandArgs(trailingOnly = TRUE); if (length(a)) a[1] else "results" }
+ARGS <- commandArgs(trailingOnly = TRUE)
+RES <- if (length(ARGS)) ARGS[1] else "results"
+ONLY_SIM1 <- length(ARGS) >= 2 && ARGS[2] == "sim1"
 EST <- c("DIF", "CM", "GPS")
 COL <- c(DIF = "red", CM = "green3", GPS = "blue")
 LWD_PAPER <- 1.3   # width of the paper's dashed lines in the overlays (plot and legend)
+
+# A5. Simulation 1: absolute bias against tau_pop, ours (filled) vs the paper's
+# Table 1 (open), one panel per estimator. Built only from sim1_vs_paper.csv
+# (written by R/summarize.R); pairs in the file's row order, which is Table 1's.
+fig_sim1 <- function() {
+  f <- file.path(RES, "sim1_vs_paper.csv")
+  if (!file.exists(f)) { cat(sprintf("SKIP: %s not found\n", f)); return(invisible()) }
+  s1 <- read.csv(f, check.names = FALSE)
+  pr <- unique(s1$pair); k <- length(pr)
+  yl <- c(0, max(s1$paper_abs_bias, s1$ours_abs_bias_pop, na.rm = TRUE) * 1.08)
+  out <- file.path(RES, "fig_sim1_abs_bias_vs_paper.png")
+  png(out, width = 1600, height = 700, res = 150)
+  op <- par(mfrow = c(1, 3), mar = c(4.5, 4.5, 3, 1), oma = c(0, 0, 2, 0))
+  for (e in EST) {
+    x <- s1[s1$estimator == e, ]; x <- x[match(pr, x$pair), ]
+    plot(NA, xlim = c(0.6, k + 0.4), ylim = yl, xaxt = "n", xlab = "Pair (t,t')",
+         ylab = "Absolute bias (vs tau_pop)", main = e)
+    axis(1, at = 1:k, labels = pr, cex.axis = 0.8)
+    abline(h = 0, col = "grey50")
+    segments(1:k, x$ours_abs_bias_pop, 1:k, x$paper_abs_bias, col = "grey70")
+    points(1:k, x$paper_abs_bias, pch = 1, cex = 1.4, lwd = 1.5, col = COL[[e]])
+    points(1:k, x$ours_abs_bias_pop, pch = 16, cex = 1.3, col = COL[[e]])
+    legend("topleft", bty = "n", cex = 0.85, legend = c("ours", "paper (Table 1)"),
+           pch = c(16, 1), col = COL[[e]], pt.cex = c(1.3, 1.4))
+  }
+  mtext("Simulation 1: absolute bias of the 6 pairwise effects (500 reps, target tau_pop)",
+        outer = TRUE, font = 2, line = 0.3)
+  par(op); dev.off()
+  cat(sprintf("wrote %s\n", out))
+}
+
+if (ONLY_SIM1) { fig_sim1(); quit(save = "no") }
 
 read_paper <- function(file, required) {
   f <- file.path(RES, file)
@@ -162,3 +199,5 @@ if (!is.null(t5)) {
   par(op); dev.off()
   cat(sprintf("wrote %s\n", file.path(RES, "fig2_table5_redrawn.png")))
 }
+
+fig_sim1()
