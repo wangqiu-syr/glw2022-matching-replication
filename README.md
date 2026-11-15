@@ -52,6 +52,19 @@ The paper leaves thirteen points open or inconsistent. The rebuild documents a c
 4. **Covariance matrix for matching (D6).** The paper builds it from X only but matches on X and Z; we use all 7 covariates.
 5. **Eq. (4) (D7, D13).** The printed formula uses the score for t in both terms. The main GPS uses the score for t′ in the second term; the literal reading is reported as a sensitivity check in [`docs/sensitivity.md`](docs/sensitivity.md).
 
+<table>
+  <tr>
+    <td><img src="results/fig1_bias_sim2_pop_vs_paper.png" width="100%" alt="Bias of the 36 Simulation 2 effects in the rebuild, with the paper's Table 3 values as published as dashed lines"></td>
+    <td><img src="results/fig1_bias_sim2_pop_vs_paper_flipped.png" width="100%" alt="Bias of the 36 Simulation 2 effects in the rebuild, with the paper's Table 3 values sign flipped as dashed lines"></td>
+  </tr>
+  <tr>
+    <td align="center">As published</td>
+    <td align="center">Sign flipped</td>
+  </tr>
+</table>
+
+The sign of bias is a further difference. Our bias (solid) is the mean estimate minus the truth; the paper's Table 3 values (dashed) mirror ours as published (left) and line up once multiplied by −1 (right). The paper does not state its convention; see [docs/two_way.md](docs/two_way.md).
+
 ## Results
 
 Mean absolute bias (95% CI coverage), averaged over pairs. Per-pair values are in [results/summary.md](results/summary.md); the full comparison with the paper is in [docs/replication_verdict.md](docs/replication_verdict.md), and pair-by-pair tables against the paper's Tables 1 and 3 are in [docs/two_way.md](docs/two_way.md).
@@ -65,6 +78,12 @@ Mean absolute bias (95% CI coverage), averaged over pairs. Per-pair values are i
 - **Efficiency.** GPS has about twice CM's MSE (against τ\_pop: 0.68 vs 0.36 in Simulation 1, 0.63 vs 0.29 in Simulation 2), and its intervals are about 30% too wide, which gives its 100% coverage.
 - **Against the paper.** Simulation 1 GPS bias averages 0.026 here and 0.29 in the paper's Table 1. In Simulation 2 our bias tracks Table 3 with the opposite sign (correlations −0.95, −0.76 and −0.87 for DIF, CM and GPS).
 - **Sensitivity (D13).** Reading Eq. (4) literally raises the Simulation 1 GPS bias to 0.159, about half the way to the paper's value.
+
+<img src="results/fig1_bias_sim2_pop.png" width="100%" alt="Bias of the 36 Simulation 2 effects in the rebuild against tau_pop, by estimator">
+
+Bias of the 36 Simulation 2 effects in the rebuild, against τ\_pop (red DIF, green CM, blue GPS).
+
+What the figure shows: DIF swings widely across the 36 effects (−2.74 to 2.00), CM less (−0.79 to 0.50), and GPS stays close to zero (−0.27 to 0.26). Against the paper (bias against τ\_pop), our DIF tracks the paper's sign-flipped values closely (see the overlays under What differed and the note on sign in [docs/two_way.md](docs/two_way.md)), but the paper's GPS bias is larger than ours in 31 of 36 pairs (mean absolute bias 0.307 vs 0.099), while its CM bias is smaller (0.139 vs 0.295).
 
 ## Reproduce
 
