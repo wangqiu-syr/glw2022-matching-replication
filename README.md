@@ -17,15 +17,23 @@ The paper offers estimators for treatment effects when students are nested in sc
 
 ## Background
 
-Everything here was written from the published description, without the original code. The paper itself is not stored in this repository:
+This repository rebuilds the two simulation studies in Guo, Liu and Wang (2022) from the published text, to test what the paper reports about covariate matching (CM) and generalized propensity score (GPS) matching for treatments that operate at more than one level.
 
-> Guo, S., Liu, J., & Wang, Q. (2022). Effective learning during COVID-19: Multilevel covariates matching and propensity score matching. *Annals of Data Science, 9*(5), 967–982. https://doi.org/10.1007/s40745-022-00392-x
+**The estimation task.** The paper crosses a student-level treatment (for example, hybrid versus fully online learning) with a school-level treatment (for example, school location). This gives A treatment combinations, and the target is the average effect τ(t, t′) for every pair of combinations: Simulation 1 has 4 combinations and 6 pairwise effects, Simulation 2 has 9 and 36, and the paper's application has 6 and 15. Each effect is estimated three ways: the raw difference in group means (DIF), CM and GPS matching.
 
-Individual-level covariates X and school-level covariates Z are combined with treatments at two levels; every combination of the two treatment levels is one treatment group, so the problem becomes a comparison of A groups and all A(A − 1)/2 pairwise effects.
+**Why rebuild it.** Four features of the paper motivate a rebuild in which the true effects are known.
+- **The simulations favour CM.** In the paper's own tables, GPS has larger absolute bias than CM in all 6 Simulation 1 pairs (Table 1) and in 32 of 36 Simulation 2 pairs (Table 3), and a larger mean squared error in all 36 (Table 3); its Simulation 1 coverage is 99–100%, above the nominal 95%.
+- **The sections describe efficiency differently.** Section 5 finds CM more efficient, Section 6 describes GPS as having much smaller mean squared error, and Section 7 describes GPS as less efficient.
+- **The application cannot show bias.** The true effects of its synthetic data are not reported. In its Fig. 2, redrawn below, the matching estimates depart from the raw difference by about 10 to 31 points in the five pairs involving group 1, which has only 8 students, and by at most about 11 points elsewhere; without a known truth, the figure cannot show which estimate is closer.
+- **Neither code nor data was released,** and several simulation details are not specified.
+
+<img src="results/fig1_paper_table3_redrawn.png" width="100%" alt="The paper's Simulation 2 signed bias of the 36 effects as published in its Table 3, by estimator">
+
+The paper's Simulation 2 results (its Fig. 1), redrawn from its Table 3: bias of the 36 effects as published (red DIF, green CM, blue GPS).
 
 <img src="results/fig2_table5_redrawn.png" width="100%" alt="The paper's Table 5 learning-mode estimates redrawn: DIF, CM and GPS estimates with CM and GPS 95% limits">
 
-The paper's application (Section 6), redrawn from its Table 5. Not replicated: the paper does not describe how those data were generated.
+The paper's application (Section 6), redrawn from its Table 5. Not replicated: the paper does not describe how those data were generated, so only its published estimates can be plotted.
 
 **How the paper handles the hierarchy.** The paper's setting is hierarchical, with students nested in schools and a treatment at each level, but its estimation is single-level:
 
@@ -34,6 +42,14 @@ The paper's application (Section 6), redrawn from its Table 5. Not replicated: t
 - **Simulations.** Z is drawn separately for each unit, so the simulated data are not nested in schools.
 
 This rebuild follows the paper's design. Matching that uses the clustering, such as matching within schools first, is left for future work.
+
+**What the rebuild has to decide.** Rebuilding from the text alone requires thirteen decisions, recorded in [docs/spec.md](docs/spec.md):
+- *Data generation:* treatment probabilities (D1), the distribution of Z1 (D2), fixed group sizes (D3), identical assignment for groups 6 and 7 (D10) and thin overlap (D11).
+- *Estimators:* the GPS model (D5), the matching distance (D6) and the reading of Eq. (4) (D7).
+- *Targets and inference:* which true effect (D4, D9) and how intervals are computed (D8).
+- *Records and checks:* the software environment (D12) and the Eq. (4) sensitivity check (D13).
+
+**Source.** Guo, S., Liu, J., & Wang, Q. (2022). Effective learning during COVID-19: Multilevel covariates matching and propensity score matching. *Annals of Data Science, 9*(5), 967–982. https://doi.org/10.1007/s40745-022-00392-x
 
 ## Design (as in Section 5)
 
@@ -171,9 +187,9 @@ R scripts in the R/ folder, run from the repository root; the order is under Rep
 [results/summary.md](results/summary.md) has compact per-pair tables. The figures, the CSVs for each simulation and the sensitivity CSVs are listed below.
 
 <details>
-<summary>Figures, CSVs and run records (19 files)</summary>
+<summary>Figures, CSVs and run records (20 files)</summary>
 
-- **Figures:** [results/fig1_bias_sim2_pop.png](results/fig1_bias_sim2_pop.png) and [results/fig1_bias_sim2_bal.png](results/fig1_bias_sim2_bal.png) (signed bias of the 36 Simulation 2 effects, against τ\_pop and τ\_bal); [results/fig1_bias_sim2_pop_vs_paper.png](results/fig1_bias_sim2_pop_vs_paper.png) and [results/fig1_bias_sim2_pop_vs_paper_flipped.png](results/fig1_bias_sim2_pop_vs_paper_flipped.png) (the same with the paper's values overlaid, as published and multiplied by −1); [results/fig_sim1_abs_bias_vs_paper.png](results/fig_sim1_abs_bias_vs_paper.png) (absolute bias of the 6 Simulation 1 effects, ours vs the paper's Table 1); [results/fig2_table5_redrawn.png](results/fig2_table5_redrawn.png) (the paper's Table 5 redrawn, not replicated).
+- **Figures:** [results/fig1_bias_sim2_pop.png](results/fig1_bias_sim2_pop.png) and [results/fig1_bias_sim2_bal.png](results/fig1_bias_sim2_bal.png) (signed bias of the 36 Simulation 2 effects, against τ\_pop and τ\_bal); [results/fig1_bias_sim2_pop_vs_paper.png](results/fig1_bias_sim2_pop_vs_paper.png) and [results/fig1_bias_sim2_pop_vs_paper_flipped.png](results/fig1_bias_sim2_pop_vs_paper_flipped.png) (the same with the paper's values overlaid, as published and multiplied by −1); [results/fig_sim1_abs_bias_vs_paper.png](results/fig_sim1_abs_bias_vs_paper.png) (absolute bias of the 6 Simulation 1 effects, ours vs the paper's Table 1); [results/fig1_paper_table3_redrawn.png](results/fig1_paper_table3_redrawn.png) (the paper's Fig. 1 redrawn from its Table 3, not replicated); [results/fig2_table5_redrawn.png](results/fig2_table5_redrawn.png) (the paper's Table 5 redrawn, not replicated).
 - **Simulation 1 CSVs:** [results/true_effects_sim1.csv](results/true_effects_sim1.csv) (τ\_pop and τ\_bal per pair); [results/sim1_summary.csv](results/sim1_summary.csv) (bias, SD, MSE, coverage and CI width per estimator, pair and target); [results/sim1_diagnostics.csv](results/sim1_diagnostics.csv) (per replication: run time, GPS convergence, matching distances); [results/sim1_vs_paper.csv](results/sim1_vs_paper.csv) (against the paper's Table 1).
 - **Simulation 2 CSVs:** [results/true_effects_sim2.csv](results/true_effects_sim2.csv); [results/sim2_summary.csv](results/sim2_summary.csv); [results/sim2_diagnostics.csv](results/sim2_diagnostics.csv); [results/sim2_vs_paper.csv](results/sim2_vs_paper.csv) (against the paper's Table 3); [results/sim2_bias_correlations.csv](results/sim2_bias_correlations.csv) (correlation with the paper's bias, as published and flipped).
 - **Sensitivity CSVs (D13):** [results/gps_literal_sim1.csv](results/gps_literal_sim1.csv) (GPS against GPS_lit); [results/gps_literal2_sim1.csv](results/gps_literal2_sim1.csv) (GPS, GPS_lit and GPS_lit2).

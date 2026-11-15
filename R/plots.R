@@ -17,14 +17,18 @@
 #   fig2_table5_redrawn.png                             Fig. 2 redrawn        (needs table 5)
 #   sim2_vs_paper.csv                                   per pair x estimator  (needs table 3)
 #   fig_sim1_abs_bias_vs_paper.png                      Simulation 1 vs Table 1 (needs sim1_vs_paper.csv)
+#   fig1_paper_table3_redrawn.png                       paper's Fig. 1 redrawn (needs table 3)
 # Parts whose paper table is missing are skipped with a message.
 # Optional arguments: a different folder for inputs and outputs (default results), then
-# "sim1" to draw only the Simulation 1 comparison figure:
+# "sim1" to draw only the Simulation 1 comparison figure, or "paper3" to draw only
+# the redraw of the paper's Fig. 1:
 #   Rscript R/plots.R results sim1
+#   Rscript R/plots.R results paper3
 
 ARGS <- commandArgs(trailingOnly = TRUE)
 RES <- if (length(ARGS)) ARGS[1] else "results"
 ONLY_SIM1 <- length(ARGS) >= 2 && ARGS[2] == "sim1"
+ONLY_PAPER3 <- length(ARGS) >= 2 && ARGS[2] == "paper3"
 EST <- c("DIF", "CM", "GPS")
 COL <- c(DIF = "red", CM = "green3", GPS = "blue")
 LWD_PAPER <- 1.3   # width of the paper's dashed lines in the overlays (plot and legend)
@@ -60,6 +64,30 @@ fig_sim1 <- function() {
 }
 
 if (ONLY_SIM1) { fig_sim1(); quit(save = "no") }
+
+# A6. The paper's Fig. 1 redrawn from its Table 3 alone: signed bias of the 36
+# Simulation 2 effects as published, pairs in the table's row order. Not ours.
+fig_paper3 <- function() {
+  f <- file.path(RES, "paper_table3.csv")
+  if (!file.exists(f)) { cat(sprintf("SKIP: %s not found\n", f)); return(invisible()) }
+  t3p <- read.csv(f, check.names = FALSE)
+  k <- nrow(t3p); b <- sapply(EST, function(e) t3p[[paste0(e, "_bias")]])
+  out <- file.path(RES, "fig1_paper_table3_redrawn.png")
+  png(out, width = 1600, height = 900, res = 150)
+  op <- par(mar = c(5.5, 4.5, 3.5, 1))
+  plot(NA, xlim = c(1, k), ylim = range(c(0, b), na.rm = TRUE), xaxt = "n", xlab = "",
+       ylab = "Signed bias (as published)",
+       main = "Paper's Simulation 2 (its Fig. 1), redrawn from its Table 3")
+  axis(1, at = 1:k, labels = paste0("(", gsub(" ", "", t3p$pair), ")"), las = 2, cex.axis = 0.65)
+  mtext("Effect index (pair t,t')", side = 1, line = 4.3)
+  abline(h = 0, col = "black", lwd = 1.5)
+  for (e in EST) lines(1:k, b[, e], type = "o", pch = 16, cex = 0.7, lwd = 1.8, col = COL[[e]])
+  legend("topleft", bty = "n", legend = EST, col = COL[EST], lty = 1, lwd = 1.8, pch = 16, cex = 0.85)
+  par(op); dev.off()
+  cat(sprintf("wrote %s\n", out))
+}
+
+if (ONLY_PAPER3) { fig_paper3(); quit(save = "no") }
 
 read_paper <- function(file, required) {
   f <- file.path(RES, file)
@@ -201,3 +229,4 @@ if (!is.null(t5)) {
 }
 
 fig_sim1()
+fig_paper3()
