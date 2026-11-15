@@ -138,4 +138,4 @@ Simulation 1, mean absolute bias over the 6 pairs (ours against the paper's Tabl
 - **CM:** 0.187 against 0.143.
 - **GPS:** 0.026 against 0.293.
 
-The Simulation 2 correlations are in "A note on the sign of bias" above.
+The Simulation 2 correlations are in "A note on the sign of bias" above. Exploratory checks of the published Table 3 (label exchange, MSE scale) are in [table3_checks.md](table3_checks.md).
