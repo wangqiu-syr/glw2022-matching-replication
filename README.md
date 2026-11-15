@@ -8,7 +8,7 @@ Guo, Liu and Wang (2022) proposed covariate matching (CM) and generalized propen
 
 - **Published vs rebuilt.** The rebuild, written from the paper's text alone without the original code, confirms the paper's central claim: both matching methods remove most of the raw-difference bias. Mean absolute bias falls from 0.6–0.9 (raw difference) to 0.2–0.3 (CM) and 0.03–0.10 (GPS).
 - **GPS does better than published.** In the rebuild, GPS matching has the smallest bias of the three estimators in both simulations, and in Simulation 1 it is nearly unbiased (mean absolute bias 0.026, against 0.29 in the paper's Table 1).
-- **Part of the gap explained.** Reading the paper's Eq. (4) literally, as printed, raises the GPS bias to 0.159, about half the way to the published value. This suggests the published GPS figures understate what the method does when Eq. (4) is applied as intended; the rest of the gap depends on details the paper leaves open (D1–D13).
+- **Part of the gap explained.** Reading the paper's Eq. (4) literally, as printed, raises the GPS bias to 0.159, about half the way to the published value. This is consistent with the published figures reflecting, at least in part, the literal reading. The original simulation code was not available for this rebuild, and the published text alone does not settle which reading was used; the remaining gap depends on details not reported in the paper (D1–D13).
 - **The method stands.** The paper's estimators are implemented unchanged. CM is more efficient, with about half GPS's mean squared error, and GPS is less biased: a bias–variance trade-off. Not every number improves: CM coverage in Simulation 1 is lower than published (83–95% against 92–98%).
 
 ## Why this replication
