@@ -8,12 +8,12 @@ Guo, Liu and Wang (2022) proposed covariate matching (CM) and generalized propen
 
 - **Published vs rebuilt.** The rebuild, written from the paper's text alone without the original code, confirms the paper's central claim: both matching methods remove most of the raw-difference bias. Mean absolute bias falls from 0.6–0.9 (raw difference) to 0.2–0.3 (CM) and 0.03–0.10 (GPS).
 - **GPS does better than published.** In the rebuild, GPS matching has the smallest bias of the three estimators in both simulations, and in Simulation 1 it is nearly unbiased (mean absolute bias 0.026, against 0.29 in the paper's Table 1).
-- **Thirteen decisions, documented.** Rebuilding from the published text alone, as any reader without the original code must, requires thirteen decisions (D1–D13). Each default follows the paper's description or is a reasoned reading of it, and is recorded in [docs/spec.md](docs/spec.md). One of them, the reading of Eq. (4) (D7), accounts for about half of the GPS gap in Simulation 1; the remaining differences depend on details not reported in the paper.
+- **Thirteen decisions, documented.** Rebuilding from the published text alone, as any reader without the original code must, requires thirteen decisions (D1–D13). Each default follows the paper's description or is a reasoned reading of it, and is recorded in [docs/spec.md](docs/spec.md). One of them, the reading of Eq. (4) (D7), could close about half of the GPS gap in Simulation 1, but only if the paper's code followed Eq. (4) as printed, which the paper does not say; the remaining differences depend on details not reported in the paper.
 - **The method stands.** The paper's estimators are implemented unchanged. CM is more efficient, with about half GPS's mean squared error, and GPS is less biased: a bias–variance trade-off. Not every number improves: CM coverage in Simulation 1 is lower than published (83–95% against 92–98%). The rebuild offers no evidence against using GPS matching for multilevel treatments in the setting the paper considers.
 
 ## Why this replication
 
-The paper offers estimators for treatment effects when students are nested in schools, but it provides no code or data and leaves several simulation details unspecified. This rebuild checks which reported results hold up, documents the choices needed to run it (D1–D13), and serves as a baseline for extending matching to clustered multilevel data.
+The paper offers estimators for treatment effects when students are nested in schools, but it provides no code or data and leaves several simulation details unspecified. This rebuild checks which reported results hold up and documents the choices needed to run it (D1–D13), with code and results that others can rerun and check.
 
 ## Background
 
@@ -60,11 +60,11 @@ This rebuild follows the paper's design. Matching that uses the clustering, such
 ## Design (as in Section 5)
 
 - **Covariates.** X = (X1, …, X4) ~ multivariate normal with the paper's covariance matrix; Z1 ~ Uniform(−3, 3) (D2), Z2 ~ χ²(1), Z3 ~ Bernoulli(0.5).
-- **Treatment.** Multinomial logit with η₁ = 0 and η_t = 0.1 × a sum of linear and squared covariate terms (D1). Simulation 1 has A = 4 groups of 100 units (6 effects); Simulation 2 has A = 9 groups of 200 units (36 effects).
+- **Treatment.** Multinomial logit (logistic regression extended to more than two groups) with η₁ = 0 and η_t = 0.1 × a sum of linear and squared covariate terms (D1). Simulation 1 has A = 4 groups of 100 units (6 effects); Simulation 2 has A = 9 groups of 200 units (36 effects).
 - **Outcomes.** Y(t) is linear in (X, Z) with group-specific coefficients, plus N(0, 1) noise.
-- **Estimators.** DIF, the raw difference in group means; CM, one Mahalanobis nearest neighbour with replacement on all 7 covariates; GPS, one nearest neighbour on the score from a linear multinomial logit (misspecified on purpose).
-- **Inference.** Percentile bootstrap, B = 200, resampling within treatment groups and refitting the GPS model each time (D8).
-- **Scale.** 500 replications per simulation. Bias, MSE and coverage are reported against two truths: the population ATE (τ\_pop) and the balanced-design ATE (τ\_bal) (D4, D9).
+- **Estimators.** DIF, the raw difference in group means; CM, which matches each unit to its nearest neighbour on all 7 covariates by Mahalanobis distance (a distance that scales the covariates by their variances and allows for their correlations), one match per unit and with replacement, so a unit can be used more than once; GPS, which matches on the estimated probability of receiving each treatment, from a multinomial logit with linear terms only (misspecified on purpose, because treatment depends on squared terms too).
+- **Inference.** Percentile bootstrap: each 95% interval runs from the 2.5th to the 97.5th percentile of the estimates in B = 200 resampled data sets, resampling within treatment groups and refitting the GPS model each time (D8).
+- **Scale.** 500 replications per simulation. Bias (mean estimate minus the truth), MSE (mean squared error: the average squared distance between estimate and truth, which combines bias and variance) and coverage (the share of 95% intervals that contain the truth) are reported against two truths: the population ATE (τ\_pop) and the balanced-design ATE (τ\_bal) (D4, D9).
 
 The full set-up is in [`docs/spec.md`](docs/spec.md).
 
@@ -80,7 +80,7 @@ The decisions behind these differences are mapped in [Background](#background) a
 2. **Z1 (D2).** "N[−3, 3]" is read as Uniform(−3, 3).
 3. **Fixed group sizes (D3, D9).** Units are drawn from a large pool by the multinomial probabilities and the first 100 or 200 per group are kept. This sample is not drawn from the population, so CM and GPS estimate the balanced-design ATE; both truths are reported.
 4. **Covariance matrix for matching (D6).** The paper builds it from X only but matches on X and Z; we use all 7 covariates.
-5. **Eq. (4) (D7, D13).** The printed formula uses the score for t in both terms. The main GPS uses the score for t′ in the second term; the literal reading is reported as a sensitivity check in [`docs/sensitivity.md`](docs/sensitivity.md). In Simulation 1, reading Eq. (4) literally, as printed, raises the mean absolute GPS bias from 0.026 to 0.159, about half the way to the published 0.293. This is consistent with the published figures reflecting, at least in part, the literal reading. The original simulation code was not available for this rebuild, and the published text alone does not settle which reading was used.
+5. **Eq. (4) (D7, D13).** The printed formula uses the score for t in both terms. The main GPS uses the score for t′ in the second term; the literal reading is reported as a sensitivity check in [`docs/sensitivity.md`](docs/sensitivity.md). In Simulation 1, reading Eq. (4) literally, as printed, raises the mean absolute GPS bias from 0.026 to 0.159, about half the way to the published 0.293. This is consistent with the published figures reflecting, at least in part, the literal reading, but only if the paper's code followed Eq. (4) as printed. The original simulation code was not available for this rebuild, and the published text alone does not settle which reading was used.
 
 <table>
   <tr>
@@ -146,7 +146,7 @@ Mean absolute bias (95% CI coverage), averaged over pairs. Per-pair values are i
 
 - **Efficiency.** GPS has about twice CM's MSE (against τ\_pop: 0.68 vs 0.36 in Simulation 1, 0.63 vs 0.29 in Simulation 2), and its intervals are about 30% too wide, which gives its 100% coverage.
 - **Against the paper.** Simulation 1 GPS bias averages 0.026 here and 0.29 in the paper's Table 1. In Simulation 2 our bias tracks Table 3 with the opposite sign (correlations −0.95, −0.76 and −0.87 for DIF, CM and GPS).
-- **Sensitivity (D13).** Reading Eq. (4) literally raises the Simulation 1 GPS bias to 0.159, about half the way to the paper's value.
+- **Sensitivity (D13).** Reading Eq. (4) literally raises the Simulation 1 GPS bias to 0.159, about half the way to the paper's value; this explains part of the gap only if the paper's code read Eq. (4) that way.
 
 <img src="results/fig1_bias_sim2_pop.png" width="100%" alt="Bias of the 36 Simulation 2 effects in the rebuild against tau_pop, by estimator">
 
@@ -163,7 +163,7 @@ What Figure F shows: DIF swings widely across the 36 effects (−2.74 to 2.00), 
 | **The application cannot show bias.** Its true effects are not reported, so Figure B cannot show which estimate is closer. | **Where the truth is known, GPS is least biased.** Mean absolute bias is 0.026 (GPS), 0.187 (CM) and 0.588 (DIF) in Simulation 1, and 0.099, 0.295 and 0.941 in Simulation 2. The application's own truth remains unknown. |
 | **Neither code nor data was released,** and several simulation details are not specified. | **Provided in this repository.** Code, results and the thirteen decisions (D1–D13) are provided under the MIT license; each replication has its own random-number stream, and the D13 reruns reproduce the main results exactly in 500 of 500 replications. |
 
-In short, where the truth is known, the rebuild shows a bias–variance trade-off: GPS is the least biased estimator and CM the most efficient, in line with Sections 5 and 7. GPS is less biased here than in the paper's tables; about half of the Simulation 1 gap follows from the reading of Eq. (4) (D7), and the rest depends on details not reported in the paper. The application's own truth remains unknown, so these results speak to the simulated settings. Every choice and result is documented, so each can be checked.
+In short, where the truth is known, the rebuild shows a bias–variance trade-off: GPS is the least biased estimator and CM the most efficient, in line with Sections 5 and 7. GPS is less biased here than in the paper's tables; reading Eq. (4) literally (D7) would close about half of the Simulation 1 gap, but only if the paper's code followed the formula as printed, and the rest depends on details not reported in the paper. The application's own truth remains unknown, so these results speak to the simulated settings. Every choice and result is documented, so each can be checked.
 
 ## Reproduce
 
@@ -178,9 +178,9 @@ From the repository root (R 4.5; packages MASS and nnet):
 | 3. Figures and comparisons | `Rscript R/plots.R` | seconds |
 | 4. D13 sensitivity (Simulation 1) | `Rscript R/run_gps_literal.R`, then `Rscript R/run_gps_literal2.R` (`check` runs the self-tests) | |
 
-Each replication is saved to `results/reps/simK/rep_###.rds` when it finishes. Re-running `run_all.R` skips replications that are already done, so an interrupted run resumes where it stopped. It refuses to mix checkpoints made with different settings (R, B, seed, optimizer tolerance). Progress goes to standard output; redirect it to `results/run_log.txt` for a background run.
+Each replication is saved to `results/reps/simK/rep_###.rds` when it finishes. Re-running `run_all.R` skips replications that are already done, so an interrupted run resumes where it stopped. It refuses to mix checkpoints made with different settings (number of replications, bootstrap resamples, seed or GPS fitting tolerance). Progress goes to standard output; redirect it to `results/run_log.txt` for a background run.
 
-Each replication uses its own pre-generated L'Ecuyer-CMRG random-number stream, so results do not depend on the number of workers or the order in which replications run. The scripts use only base R, `parallel` and `nnet`, plus `MASS` for data generation. The R version and session details of the full run are in `results/run_session_info.txt`; the `nnet` and `MASS` versions used (7.3.20 and 7.3.65) are on the second line of `results/run_log.txt`. No `renv` lockfile is included.
+Each replication draws its random numbers from its own separate, reproducible stream (R's L'Ecuyer-CMRG generator; L'Ecuyer et al., 2002), so results are the same however many processor cores share the work and in whatever order the replications run. The scripts use only base R, `parallel` and `nnet`, plus `MASS` for data generation. The R version and session details of the full run are in `results/run_session_info.txt`; the `nnet` and `MASS` versions used (7.3.20 and 7.3.65) are on the second line of `results/run_log.txt`. Package versions are recorded but not pinned (there is no `renv` lockfile).
 
 ## Files
 
@@ -200,7 +200,7 @@ R scripts in the R/ folder, run from the repository root; the order is under Rep
 <summary>R scripts by role (14 files)</summary>
 
 - **Data generation:** [R/dgp.R](R/dgp.R) (covariates, treatment probabilities, outcomes, true effects); [R/check_truth.R](R/check_truth.R) (computes and saves the true effects).
-- **Estimators:** [R/estimators.R](R/estimators.R) (DIF, CM, GPS and the bootstrap); [R/gps_literal.R](R/gps_literal.R) and [R/gps_literal2.R](R/gps_literal2.R) (the D13 variants GPS_lit and GPS_lit2).
+- **Estimators:** [R/estimators.R](R/estimators.R) (DIF, CM, GPS and the bootstrap); [R/gps_literal.R](R/gps_literal.R) and [R/gps_literal2.R](R/gps_literal2.R) (the two literal readings of Eq. (4) used in the D13 check, labelled GPS_lit and GPS_lit2 in [docs/sensitivity.md](docs/sensitivity.md)).
 - **Runners:** [R/replicate.R](R/replicate.R) (one replication, with its own random-number stream); [R/run_sim.R](R/run_sim.R) (parallel runs with checkpoints); [R/run_all.R](R/run_all.R) (both simulations, then the summaries); [R/run_gps_literal.R](R/run_gps_literal.R) and [R/run_gps_literal2.R](R/run_gps_literal2.R) (paired D13 runs and their self-tests).
 - **Summaries and plots:** [R/summarize.R](R/summarize.R) (summary and comparison CSVs); [R/plots.R](R/plots.R) (figures and the Simulation 2 comparison); [R/table3_checks.R](R/table3_checks.R) (exploratory checks of the published Table 3, from existing CSVs).
 - **Tests:** [R/test_estimators.R](R/test_estimators.R) (unit and integration tests).
@@ -217,8 +217,8 @@ R scripts in the R/ folder, run from the repository root; the order is under Rep
 - **Figures:** [results/fig1_bias_sim2_pop.png](results/fig1_bias_sim2_pop.png) and [results/fig1_bias_sim2_bal.png](results/fig1_bias_sim2_bal.png) (signed bias of the 36 Simulation 2 effects, against τ\_pop and τ\_bal); [results/fig1_bias_sim2_pop_vs_paper.png](results/fig1_bias_sim2_pop_vs_paper.png) and [results/fig1_bias_sim2_pop_vs_paper_flipped.png](results/fig1_bias_sim2_pop_vs_paper_flipped.png) (the same with the paper's values overlaid, as published and multiplied by −1); [results/fig_sim1_abs_bias_vs_paper.png](results/fig_sim1_abs_bias_vs_paper.png) (absolute bias of the 6 Simulation 1 effects, ours vs the paper's Table 1); [results/fig1_paper_table3_redrawn.png](results/fig1_paper_table3_redrawn.png) (the paper's Fig. 1 redrawn from its Table 3, not replicated); [results/fig2_table5_redrawn.png](results/fig2_table5_redrawn.png) (the paper's Table 5 redrawn, not replicated).
 - **Simulation 1 CSVs:** [results/true_effects_sim1.csv](results/true_effects_sim1.csv) (τ\_pop and τ\_bal per pair); [results/sim1_summary.csv](results/sim1_summary.csv) (bias, SD, MSE, coverage and CI width per estimator, pair and target); [results/sim1_diagnostics.csv](results/sim1_diagnostics.csv) (per replication: run time, GPS convergence, matching distances); [results/sim1_vs_paper.csv](results/sim1_vs_paper.csv) (against the paper's Table 1).
 - **Simulation 2 CSVs:** [results/true_effects_sim2.csv](results/true_effects_sim2.csv); [results/sim2_summary.csv](results/sim2_summary.csv); [results/sim2_diagnostics.csv](results/sim2_diagnostics.csv); [results/sim2_vs_paper.csv](results/sim2_vs_paper.csv) (against the paper's Table 3); [results/sim2_bias_correlations.csv](results/sim2_bias_correlations.csv) (correlation with the paper's bias, as published and flipped); [results/table3_checks.csv](results/table3_checks.csv) (the numbers in docs/table3_checks.md).
-- **Sensitivity CSVs (D13):** [results/gps_literal_sim1.csv](results/gps_literal_sim1.csv) (GPS against GPS_lit); [results/gps_literal2_sim1.csv](results/gps_literal2_sim1.csv) (GPS, GPS_lit and GPS_lit2).
-- **Run records:** [results/run_log.txt](results/run_log.txt) and [results/run_session_info.txt](results/run_session_info.txt) (log and `sessionInfo()` of the full run).
+- **Sensitivity CSVs (D13):** [results/gps_literal_sim1.csv](results/gps_literal_sim1.csv) (the main GPS against the first literal reading); [results/gps_literal2_sim1.csv](results/gps_literal2_sim1.csv) (the main GPS and both literal readings).
+- **Run records:** [results/run_log.txt](results/run_log.txt) and [results/run_session_info.txt](results/run_session_info.txt) (the full run's log, and the R version and packages it used).
 
 </details>
 
@@ -232,13 +232,16 @@ Per-replication checkpoints (results/reps/, results/reps_gps_literal/, results/r
 
 [LICENSE](LICENSE) (MIT), [CITATION.cff](CITATION.cff) (citation metadata) and [.gitignore](.gitignore) (keeps checkpoints, PDFs and local files out of the repo).
 
-## Lesson
+## Lessons
 
-The GPS model's fitting tolerance matters when matching on fitted probabilities. With `nnet::multinom`'s defaults (reltol = 1e-8, maxit = 100), the fitted probabilities were not precise enough for the very small matching distances, and the GPS estimate depended on the optimizer's starting point. Fitting at reltol = 1e-14 with maxit = 10000 (D5) removed this, and a test now checks it.
+- **Write down every choice the paper leaves open, before running anything.** Thirteen were needed here (D1–D13 in [docs/spec.md](docs/spec.md)), and several change the numbers.
+- **Know which true effect you are estimating.** Drawing a fixed number of units per group changes whom the sample represents ([τ\_pop vs τ\_bal](#two-targets-τ_pop-and-τ_bal)).
+- **Fit the propensity model precisely before matching on it.** With the software's default settings, which units were matched depended on chance details of the fit; a tighter fit removed this (D5), and a test now checks it.
+- **Tables should state their conventions:** the sign of the bias, what the MSE measures, and how the intervals were built.
 
 ## Conclusions
 
-In these simulations, covariate matching and GPS matching both remove most of the bias in the raw group difference, as the paper reports. GPS had the smallest bias and CM the smallest mean squared error, so the better choice depends on whether bias or variance matters more. The published numbers cannot be reproduced exactly from the paper alone, because thirteen points are left open; reading Eq. (4) literally accounts for about half of the GPS discrepancy in Simulation 1. These results are a baseline for extending the comparison to clustered, multilevel data.
+In these simulations, covariate matching and GPS matching both remove most of the bias in the raw group difference, as the paper reports. GPS had the smallest bias and CM the smallest mean squared error, so the better choice depends on whether bias or variance matters more. The published numbers cannot be reproduced exactly from the paper alone, because thirteen points are left open; reading Eq. (4) literally would close about half of the GPS discrepancy in Simulation 1, but only if the paper's code followed Eq. (4) as printed. Like the paper's, these simulations have no school clusters: the two treatments are combined into one, and matching ignores which school a student attends. How well the methods work on genuinely clustered data is a separate question that these results do not answer.
 
 ## Acknowledgment
 
@@ -254,6 +257,7 @@ The code was written with assistance from Claude Code (Anthropic).
 
 - Crump, R. K., Hotz, V. J., Imbens, G. W., & Mitnik, O. A. (2009). Dealing with limited overlap in estimation of average treatment effects. *Biometrika, 96*(1), 187–199. https://doi.org/10.1093/biomet/asn055
 - Guo, S., Liu, J., & Wang, Q. (2022). Effective learning during COVID-19: Multilevel covariates matching and propensity score matching. *Annals of Data Science, 9*(5), 967–982. https://doi.org/10.1007/s40745-022-00392-x
+- L'Ecuyer, P., Simard, R., Chen, E. J., & Kelton, W. D. (2002). An object-oriented random-number package with many long streams and substreams. *Operations Research, 50*(6), 1073–1075. https://doi.org/10.1287/opre.50.6.1073.358
 - Yang, S., Imbens, G., Cui, Z., Faries, D., & Kadziola, Z. (2016). Propensity score matching and subclassification in observational studies with multi-level treatments. *Biometrics, 72*, 1055–1065.
 
 ## How to cite
