@@ -1,6 +1,6 @@
 # Replication of Guo, Liu & Wang (2022): results and decisions D1–D13
 
-Nov 4, 2026 · @Qiu Wang
+Nov 4, 2026
 
 Our R replication reproduces the paper's main pattern: both matching methods remove most of the bias in the raw group difference. It does not reproduce the paper's exact numbers, and our GPS estimator is far less biased than the paper's, so the thirteen choices below, where the paper is silent, matter.
 
@@ -92,7 +92,7 @@ These results support the pattern, not the paper's exact numbers, and several cl
 
 ## Acknowledgments
 
-This replication was written from the simulation procedures described in the published paper (Guo, Liu & Wang, 2022). The authors' original simulation code was not available to us, and Dr. Liu did not take part in this replication. The code was written with assistance from Claude Code.
+This replication was written from the simulation procedures described in the published paper (Guo, Liu & Wang, 2022). The authors' original simulation code was not available to us, and the paper's other authors did not take part in this replication. The code was written with assistance from Claude Code.
 
 ## Conclusions
 
