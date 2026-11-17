@@ -176,7 +176,7 @@ From the repository root (R 4.5; packages MASS and nnet):
 | 1. Simulations 1 and 2, then summaries | `Rscript R/run_all.R` (options: `R=500 B=200 workers=10`) | On 10 workers: Simulation 1 about 15 min, Simulation 2 about 4 h 48 min, full run about 5 h (log: 14m28s, 4h48m19s, 5h03m08s) |
 | 2. Rebuild summaries only | `Rscript R/summarize.R` | seconds |
 | 3. Figures and comparisons | `Rscript R/plots.R` | seconds |
-| 4. D13 sensitivity (Simulation 1) | `Rscript R/run_gps_literal.R`, then `Rscript R/run_gps_literal2.R` (`check` runs the self-tests) | |
+| 4. D13 sensitivity (Simulation 1) | `Rscript R/run_gps_literal.R`, then `Rscript R/run_gps_literal2.R` (`check` runs the self-tests) | – |
 
 Each replication is saved to `results/reps/simK/rep_###.rds` when it finishes. Re-running `run_all.R` skips replications that are already done, so an interrupted run resumes where it stopped. It refuses to mix checkpoints made with different settings (number of replications, bootstrap resamples, seed or GPS fitting tolerance). Progress goes to standard output; redirect it to `results/run_log.txt` for a background run.
 
