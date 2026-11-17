@@ -2,6 +2,8 @@
 
 Qiu Wang, Syracuse University · v1.0.0 · November 2026
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24301013.svg)](https://doi.org/10.5281/zenodo.24301013)
+
 ## Key findings
 
 Guo, Liu and Wang (2022) proposed covariate matching (CM) and generalized propensity score (GPS) matching to estimate pairwise effects across multilevel treatment combinations, and reported simulations showing that both reduce the bias of the raw group difference.
@@ -285,9 +287,9 @@ The two rebuilds were written independently of each other. These links were adde
 
 ## How to cite
 
-Wang, Q. (2026). *Generalized propensity score and covariate matching for multilevel treatments in hierarchical data: Rebuilding Guo, Liu, and Wang (2022) in R* (Version 1.0.0) [Computer software]. https://github.com/wangqiu-syr/glw2022-matching-replication
+Wang, Q. (2026). *Generalized propensity score and covariate matching for multilevel treatments in hierarchical data: Rebuilding Guo, Liu, and Wang (2022) in R* (Version 1.0.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.24301013
 
-DOI: to be added after the Zenodo release. Citation metadata are in [`CITATION.cff`](CITATION.cff); please also cite the original paper.
+Code: https://github.com/wangqiu-syr/glw2022-matching-replication. Citation metadata are in [`CITATION.cff`](CITATION.cff); please also cite the original paper.
 
 ## License
 
