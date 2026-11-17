@@ -180,7 +180,7 @@ From the repository root (R 4.5; packages MASS and nnet):
 
 Each replication is saved to `results/reps/simK/rep_###.rds` when it finishes. Re-running `run_all.R` skips replications that are already done, so an interrupted run resumes where it stopped. It refuses to mix checkpoints made with different settings (number of replications, bootstrap resamples, seed or GPS fitting tolerance). Progress goes to standard output; redirect it to `results/run_log.txt` for a background run.
 
-Each replication draws its random numbers from its own separate, reproducible stream (R's L'Ecuyer-CMRG generator; L'Ecuyer et al., 2002), so results are the same however many processor cores share the work and in whatever order the replications run. The scripts use only base R, `parallel` and `nnet`, plus `MASS` for data generation. The R version and session details of the full run are in `results/run_session_info.txt`; the `nnet` and `MASS` versions used (7.3.20 and 7.3.65) are on the second line of `results/run_log.txt`. Package versions are recorded but not pinned (there is no `renv` lockfile).
+Each replication draws its random numbers from its own separate, reproducible stream (R's L'Ecuyer-CMRG generator; L'Ecuyer et al., 2002), so results are the same however many processor cores share the work and in whatever order the replications run. The scripts use only base R, `parallel` and `nnet`, plus `MASS` for data generation. The R version and session details of the full run are in `results/run_session_info.txt`; the `nnet` and `MASS` versions used (7.3.20 and 7.3.65) are on the second line of `results/run_log.txt`. The package versions are recorded but not fixed, so other versions may give slightly different numbers.
 
 ## Files
 
@@ -200,7 +200,7 @@ R scripts in the R/ folder, run from the repository root; the order is under Rep
 <summary>R scripts by role (14 files)</summary>
 
 - **Data generation:** [R/dgp.R](R/dgp.R) (covariates, treatment probabilities, outcomes, true effects); [R/check_truth.R](R/check_truth.R) (computes and saves the true effects).
-- **Estimators:** [R/estimators.R](R/estimators.R) (DIF, CM, GPS and the bootstrap); [R/gps_literal.R](R/gps_literal.R) and [R/gps_literal2.R](R/gps_literal2.R) (the two literal readings of Eq. (4) used in the D13 check, labelled GPS_lit and GPS_lit2 in [docs/sensitivity.md](docs/sensitivity.md)).
+- **Estimators:** [R/estimators.R](R/estimators.R) (DIF, CM, GPS and the bootstrap); [R/gps_literal.R](R/gps_literal.R) and [R/gps_literal2.R](R/gps_literal2.R) (the two literal readings of Eq. (4) used in the D13 check; see [docs/sensitivity.md](docs/sensitivity.md)).
 - **Runners:** [R/replicate.R](R/replicate.R) (one replication, with its own random-number stream); [R/run_sim.R](R/run_sim.R) (parallel runs with checkpoints); [R/run_all.R](R/run_all.R) (both simulations, then the summaries); [R/run_gps_literal.R](R/run_gps_literal.R) and [R/run_gps_literal2.R](R/run_gps_literal2.R) (paired D13 runs and their self-tests).
 - **Summaries and plots:** [R/summarize.R](R/summarize.R) (summary and comparison CSVs); [R/plots.R](R/plots.R) (figures and the Simulation 2 comparison); [R/table3_checks.R](R/table3_checks.R) (exploratory checks of the published Table 3, from existing CSVs).
 - **Tests:** [R/test_estimators.R](R/test_estimators.R) (unit and integration tests).
@@ -236,7 +236,7 @@ Per-replication checkpoints (results/reps/, results/reps_gps_literal/, results/r
 
 - **Write down every choice the paper leaves open, before running anything.** Thirteen were needed here (D1–D13 in [docs/spec.md](docs/spec.md)), and several change the numbers.
 - **Know which true effect you are estimating.** Drawing a fixed number of units per group changes whom the sample represents ([τ\_pop vs τ\_bal](#two-targets-τ_pop-and-τ_bal)).
-- **Fit the propensity model precisely before matching on it.** With the software's default settings, which units were matched depended on chance details of the fit; a tighter fit removed this (D5), and a test now checks it.
+- **Fit the propensity model precisely before matching on it.** With the software's default settings, which units were matched depended on where the fitting algorithm started. Fitting more precisely (D5) removed this: fitted from two different starting points, the model now gives the same scores and the same estimates (test 4b in `R/test_estimators.R`).
 - **Tables should state their conventions:** the sign of the bias, what the MSE measures, and how the intervals were built.
 
 ## Conclusions
