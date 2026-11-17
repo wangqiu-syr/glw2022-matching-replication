@@ -11,6 +11,16 @@ date-released: 2026-11-17
 doi: 10.5281/zenodo.24301013
 repository-code: "https://github.com/wangqiu-syr/glw2022-matching-replication"
 license: MIT
+keywords:
+  - causal inference
+  - propensity score
+  - generalized propensity score
+  - covariate matching
+  - matching
+  - multilevel treatments
+  - replication
+  - simulation
+  - R
 references:
   - type: article
     authors:
