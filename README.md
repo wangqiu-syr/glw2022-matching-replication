@@ -80,7 +80,7 @@ The decisions behind these differences are mapped in [Background](#background) a
 2. **Z1 (D2).** "N[−3, 3]" is read as Uniform(−3, 3).
 3. **Fixed group sizes (D3, D9).** Units are drawn from a large pool by the multinomial probabilities and the first 100 or 200 per group are kept. This sample is not drawn from the population, so CM and GPS estimate the balanced-design ATE; both truths are reported.
 4. **Covariance matrix for matching (D6).** The paper builds it from X only but matches on X and Z; we use all 7 covariates.
-5. **Eq. (4) (D7, D13).** The printed formula uses the score for t in both terms. The main GPS uses the score for t′ in the second term; the literal reading is reported as a sensitivity check in [`docs/sensitivity.md`](docs/sensitivity.md). In Simulation 1, reading Eq. (4) literally, as printed, raises the mean absolute GPS bias from 0.026 to 0.159, about half the way to the published 0.293. This is consistent with the published figures reflecting, at least in part, the literal reading, but only if the paper's code followed Eq. (4) as printed. The original simulation code was not available for this rebuild, and the published text alone does not settle which reading was used.
+5. **Eq. (4) (D7, D13).** The printed formula uses the score for t in both terms. The main GPS uses the score for t′ in the second term; the literal reading is reported as a sensitivity check in [`docs/sensitivity.md`](docs/sensitivity.md). In Simulation 1, reading Eq. (4) literally, as printed, raises the mean absolute GPS bias from 0.026 to 0.159, about half the way to the published 0.293. This would explain part of the gap, but only if the paper's code followed Eq. (4) as printed. The original simulation code was not available for this rebuild, and the published text alone does not settle which reading was used.
 
 <table>
   <tr>
@@ -176,11 +176,11 @@ From the repository root (R 4.5; packages MASS and nnet):
 | 1. Simulations 1 and 2, then summaries | `Rscript R/run_all.R` (options: `R=500 B=200 workers=10`) | On 10 workers: Simulation 1 about 15 min, Simulation 2 about 4 h 48 min, full run about 5 h (log: 14m28s, 4h48m19s, 5h03m08s) |
 | 2. Rebuild summaries only | `Rscript R/summarize.R` | seconds |
 | 3. Figures and comparisons | `Rscript R/plots.R` | seconds |
-| 4. D13 sensitivity (Simulation 1) | `Rscript R/run_gps_literal.R`, then `Rscript R/run_gps_literal2.R` (`check` runs the self-tests) | |
+| 4. D13 sensitivity (Simulation 1) | `Rscript R/run_gps_literal.R`, then `Rscript R/run_gps_literal2.R` (`check` runs the self-tests) | – |
 
 Each replication is saved to `results/reps/simK/rep_###.rds` when it finishes. Re-running `run_all.R` skips replications that are already done, so an interrupted run resumes where it stopped. It refuses to mix checkpoints made with different settings (number of replications, bootstrap resamples, seed or GPS fitting tolerance). Progress goes to standard output; redirect it to `results/run_log.txt` for a background run.
 
-Each replication draws its random numbers from its own separate, reproducible stream (R's L'Ecuyer-CMRG generator; L'Ecuyer et al., 2002), so results are the same however many processor cores share the work and in whatever order the replications run. The scripts use only base R, `parallel` and `nnet`, plus `MASS` for data generation. The R version and session details of the full run are in `results/run_session_info.txt`; the `nnet` and `MASS` versions used (7.3.20 and 7.3.65) are on the second line of `results/run_log.txt`. Package versions are recorded but not pinned (there is no `renv` lockfile).
+Each replication draws its random numbers from its own separate, reproducible stream (R's L'Ecuyer-CMRG generator; L'Ecuyer et al., 2002), so results are the same however many processor cores share the work and in whatever order the replications run. The scripts use only base R, `parallel` and `nnet`, plus `MASS` for data generation. The R version and session details of the full run are in `results/run_session_info.txt`; the `nnet` and `MASS` versions used (7.3.20 and 7.3.65) are on the second line of `results/run_log.txt`. The package versions are recorded but not fixed, so other versions may give slightly different numbers.
 
 ## Files
 
@@ -200,7 +200,7 @@ R scripts in the R/ folder, run from the repository root; the order is under Rep
 <summary>R scripts by role (14 files)</summary>
 
 - **Data generation:** [R/dgp.R](R/dgp.R) (covariates, treatment probabilities, outcomes, true effects); [R/check_truth.R](R/check_truth.R) (computes and saves the true effects).
-- **Estimators:** [R/estimators.R](R/estimators.R) (DIF, CM, GPS and the bootstrap); [R/gps_literal.R](R/gps_literal.R) and [R/gps_literal2.R](R/gps_literal2.R) (the two literal readings of Eq. (4) used in the D13 check, labelled GPS_lit and GPS_lit2 in [docs/sensitivity.md](docs/sensitivity.md)).
+- **Estimators:** [R/estimators.R](R/estimators.R) (DIF, CM, GPS and the bootstrap); [R/gps_literal.R](R/gps_literal.R) and [R/gps_literal2.R](R/gps_literal2.R) (the two literal readings of Eq. (4) used in the D13 check; see [docs/sensitivity.md](docs/sensitivity.md)).
 - **Runners:** [R/replicate.R](R/replicate.R) (one replication, with its own random-number stream); [R/run_sim.R](R/run_sim.R) (parallel runs with checkpoints); [R/run_all.R](R/run_all.R) (both simulations, then the summaries); [R/run_gps_literal.R](R/run_gps_literal.R) and [R/run_gps_literal2.R](R/run_gps_literal2.R) (paired D13 runs and their self-tests).
 - **Summaries and plots:** [R/summarize.R](R/summarize.R) (summary and comparison CSVs); [R/plots.R](R/plots.R) (figures and the Simulation 2 comparison); [R/table3_checks.R](R/table3_checks.R) (exploratory checks of the published Table 3, from existing CSVs).
 - **Tests:** [R/test_estimators.R](R/test_estimators.R) (unit and integration tests).
@@ -214,7 +214,7 @@ R scripts in the R/ folder, run from the repository root; the order is under Rep
 <details>
 <summary>Figures, CSVs and run records (21 files)</summary>
 
-- **Figures:** [results/fig1_bias_sim2_pop.png](results/fig1_bias_sim2_pop.png) and [results/fig1_bias_sim2_bal.png](results/fig1_bias_sim2_bal.png) (signed bias of the 36 Simulation 2 effects, against τ\_pop and τ\_bal); [results/fig1_bias_sim2_pop_vs_paper.png](results/fig1_bias_sim2_pop_vs_paper.png) and [results/fig1_bias_sim2_pop_vs_paper_flipped.png](results/fig1_bias_sim2_pop_vs_paper_flipped.png) (the same with the paper's values overlaid, as published and multiplied by −1); [results/fig_sim1_abs_bias_vs_paper.png](results/fig_sim1_abs_bias_vs_paper.png) (absolute bias of the 6 Simulation 1 effects, ours vs the paper's Table 1); [results/fig1_paper_table3_redrawn.png](results/fig1_paper_table3_redrawn.png) (the paper's Fig. 1 redrawn from its Table 3, not replicated); [results/fig2_table5_redrawn.png](results/fig2_table5_redrawn.png) (the paper's Table 5 redrawn, not replicated).
+- **Figures:** [results/fig1_bias_sim2_pop.png](results/fig1_bias_sim2_pop.png) and [results/fig1_bias_sim2_bal.png](results/fig1_bias_sim2_bal.png) (signed bias of the 36 Simulation 2 effects, against τ\_pop and τ\_bal); [results/fig1_bias_sim2_pop_vs_paper.png](results/fig1_bias_sim2_pop_vs_paper.png) and [results/fig1_bias_sim2_pop_vs_paper_flipped.png](results/fig1_bias_sim2_pop_vs_paper_flipped.png) (the same with the paper's values overlaid, as published and multiplied by −1); [results/fig_sim1_abs_bias_vs_paper.png](results/fig_sim1_abs_bias_vs_paper.png) (absolute bias of the 6 Simulation 1 effects, ours vs the paper's Table 1); [results/fig1_paper_table3_redrawn.png](results/fig1_paper_table3_redrawn.png) (the paper's Fig. 1 redrawn from its Table 3, not replicated); [results/fig2_table5_redrawn.png](results/fig2_table5_redrawn.png) (the paper's Fig. 2 redrawn from its Table 5, not replicated).
 - **Simulation 1 CSVs:** [results/true_effects_sim1.csv](results/true_effects_sim1.csv) (τ\_pop and τ\_bal per pair); [results/sim1_summary.csv](results/sim1_summary.csv) (bias, SD, MSE, coverage and CI width per estimator, pair and target); [results/sim1_diagnostics.csv](results/sim1_diagnostics.csv) (per replication: run time, GPS convergence, matching distances); [results/sim1_vs_paper.csv](results/sim1_vs_paper.csv) (against the paper's Table 1).
 - **Simulation 2 CSVs:** [results/true_effects_sim2.csv](results/true_effects_sim2.csv); [results/sim2_summary.csv](results/sim2_summary.csv); [results/sim2_diagnostics.csv](results/sim2_diagnostics.csv); [results/sim2_vs_paper.csv](results/sim2_vs_paper.csv) (against the paper's Table 3); [results/sim2_bias_correlations.csv](results/sim2_bias_correlations.csv) (correlation with the paper's bias, as published and flipped); [results/table3_checks.csv](results/table3_checks.csv) (the numbers in docs/table3_checks.md).
 - **Sensitivity CSVs (D13):** [results/gps_literal_sim1.csv](results/gps_literal_sim1.csv) (the main GPS against the first literal reading); [results/gps_literal2_sim1.csv](results/gps_literal2_sim1.csv) (the main GPS and both literal readings).
@@ -236,7 +236,7 @@ Per-replication checkpoints (results/reps/, results/reps_gps_literal/, results/r
 
 - **Write down every choice the paper leaves open, before running anything.** Thirteen were needed here (D1–D13 in [docs/spec.md](docs/spec.md)), and several change the numbers.
 - **Know which true effect you are estimating.** Drawing a fixed number of units per group changes whom the sample represents ([τ\_pop vs τ\_bal](#two-targets-τ_pop-and-τ_bal)).
-- **Fit the propensity model precisely before matching on it.** With the software's default settings, which units were matched depended on chance details of the fit; a tighter fit removed this (D5), and a test now checks it.
+- **Fit the propensity model precisely before matching on it.** With the software's default settings, which units were matched depended on where the fitting algorithm started. Fitting more precisely (D5) removed this: fitted from two different starting points, the model now gives the same scores and the same estimates (test 4b in `R/test_estimators.R`).
 - **Tables should state their conventions:** the sign of the bias, what the MSE measures, and how the intervals were built.
 
 ## Conclusions
@@ -258,7 +258,7 @@ The code was written with assistance from Claude Code (Anthropic).
 - Crump, R. K., Hotz, V. J., Imbens, G. W., & Mitnik, O. A. (2009). Dealing with limited overlap in estimation of average treatment effects. *Biometrika, 96*(1), 187–199. https://doi.org/10.1093/biomet/asn055
 - Guo, S., Liu, J., & Wang, Q. (2022). Effective learning during COVID-19: Multilevel covariates matching and propensity score matching. *Annals of Data Science, 9*(5), 967–982. https://doi.org/10.1007/s40745-022-00392-x
 - L'Ecuyer, P., Simard, R., Chen, E. J., & Kelton, W. D. (2002). An object-oriented random-number package with many long streams and substreams. *Operations Research, 50*(6), 1073–1075. https://doi.org/10.1287/opre.50.6.1073.358
-- Yang, S., Imbens, G., Cui, Z., Faries, D., & Kadziola, Z. (2016). Propensity score matching and subclassification in observational studies with multi-level treatments. *Biometrics, 72*, 1055–1065.
+- Yang, S., Imbens, G., Cui, Z., Faries, D., & Kadziola, Z. (2016). Propensity score matching and subclassification in observational studies with multi-level treatments. *Biometrics, 72*, 1055–1065. https://doi.org/10.1111/biom.12505
 
 ## How to cite
 
