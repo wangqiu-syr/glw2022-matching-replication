@@ -1,6 +1,6 @@
 # Generalized propensity score and covariate matching for multilevel treatments in hierarchical data: Rebuilding Guo, Liu, and Wang (2022) in R
 
-Qiu Wang, Syracuse University · v1.0 · November 2026
+Qiu Wang, Syracuse University · v1.0.0 · November 2026
 
 ## Key findings
 
@@ -258,7 +258,7 @@ The code was written with assistance from Claude Code (Anthropic).
 
 ## How to cite
 
-Wang, Q. (2026). *Generalized propensity score and covariate matching for multilevel treatments in hierarchical data: Rebuilding Guo, Liu, and Wang (2022) in R* (Version 1.0) [Computer software]. https://github.com/wangqiu-syr/glw2022-matching-replication
+Wang, Q. (2026). *Generalized propensity score and covariate matching for multilevel treatments in hierarchical data: Rebuilding Guo, Liu, and Wang (2022) in R* (Version 1.0.0) [Computer software]. https://github.com/wangqiu-syr/glw2022-matching-replication
 
 DOI: to be added after the Zenodo release. Citation metadata are in [`CITATION.cff`](CITATION.cff); please also cite the original paper.
 
