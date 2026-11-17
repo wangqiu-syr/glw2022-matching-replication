@@ -269,6 +269,13 @@ Disclosure: the author of this repository is a coauthor of Guo, Liu and Wang (20
 
 The code was written with assistance from Claude Code (Anthropic).
 
+## Related repositories
+
+- [glw2022-rebuild2](https://github.com/wangqiu-syr/glw2022-rebuild2): a second rebuild of the same simulations, also written from the paper alone.
+- [glw2022-multilevelmatching-crosscheck](https://github.com/wangqiu-syr/glw2022-multilevelmatching-crosscheck): a later, separate repository. It checks this rebuild against Yang et al.'s (2016) `multilevelMatching` package and compares it with the second rebuild.
+
+The two rebuilds were written independently of each other. These links were added at release, and nothing in this repository depends on the other two.
+
 ## References
 
 - Crump, R. K., Hotz, V. J., Imbens, G. W., & Mitnik, O. A. (2009). Dealing with limited overlap in estimation of average treatment effects. *Biometrika, 96*(1), 187–199. https://doi.org/10.1093/biomet/asn055
