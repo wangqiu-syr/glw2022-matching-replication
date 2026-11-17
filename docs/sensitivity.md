@@ -43,6 +43,6 @@ MSE and 95% interval coverage (%) against τ\_pop. The "GPS_lit2 vs GPS" column 
 
 ## What this does and does not show
 
-This tests one reading of Eq. (4). It shows that the literal reading moves the GPS bias toward the paper's values and accounts for part of the gap. It does not show which reading the paper used, and the rest of the gap remains unexplained.
+This tests one reading of Eq. (4). It shows that the literal reading moves the GPS bias toward the paper's values and would account for part of the gap, if the paper's code followed Eq. (4) as printed. It does not show which reading the paper used, and the rest of the gap remains unexplained.
 
 Code: `R/gps_literal.R`, `R/run_gps_literal.R`, `R/gps_literal2.R`, `R/run_gps_literal2.R`.
